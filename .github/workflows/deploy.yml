@@ -17,13 +17,16 @@ jobs:
       with:
         node-version: '18'
     
+    - name: Install dependencies
+      run: npm install
+    
     - name: Run tests
       run: npm test
 
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
     - uses: actions/checkout@v3
@@ -38,4 +41,10 @@ jobs:
     
     - name: Deploy to S3
       run: |
-        aws s3 sync . s3://${{ secrets.my-cicd-bucket-amoua }} --exclude ".git/*" --exclude ".github/*" --exclude "node_modules/*" --exclude "package*.json" --exclude "test.js"
+        aws s3 sync . s3://${{ secrets.S3_BUCKET_NAME }} \
+          --exclude ".git/*" \
+          --exclude ".github/*" \
+          --exclude "node_modules/*" \
+          --exclude "package*.json" \
+          --exclude "test.js" \
+          --delete
